@@ -1,0 +1,102 @@
+---
+title: "Coding Challenge 3 - Advanced Data Visualization"
+output: html_notebook
+---
+
+#read in the data (don't forget na.strings!)
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(ggpubr)
+library(ggrepel)
+library(ggprism)
+
+mycotoxin <- read.csv("C:/Users/there/Desktop/PLPA 5820/Data Visualization/MycotoxinData.csv", na.strings = "na")
+```
+
+#Question 1 - Using ggplot, create a boxplot of DON by Treatment so that the plot looks like the image below. (1) Jitter points over the boxplot and fill the points and boxplots Cultivar with two colors from the cbbPallete introduced last week. (2) Change the transparency of the jittered points to 0.6. (3) The y-axis should be labeled "DON (ppm)", and the x-axis should be left blank. (4) The plot should use a classic theme (5) The plot should also be faceted by Cultivar
+```{r}
+Question_1 <- ggplot(mycotoxin, aes(x = Treatment, y = DON, color = Cultivar)) +
+  geom_boxplot() +
+  geom_point(position = position_jitterdodge(jitter.width = 0.6)) +
+  scale_color_manual(values = c("#E69F00", "#0072B2")) +
+  xlab("") +
+  ylab("DON (ppm)") +
+  theme_classic() +
+  facet_wrap(~Cultivar)
+Question_1
+
+```
+
+#Question 2 - Change the factor order level so that the treatment “NTC” is first, followed by “Fg”, “Fg + 37”, “Fg + 40”, and “Fg + 70". 
+```{r}
+mycotoxin$Treatment <- factor(mycotoxin$Treatment, levels = c("NTC", "Fg", "Fg + 37", "Fg + 40", "Fg + 70"), ordered = TRUE)
+                    
+
+Question_2 <- ggplot(mycotoxin, aes(x = Treatment, y = DON, color = Cultivar)) +
+  geom_boxplot() +
+  geom_point(position = position_jitterdodge(jitter.width = 0.6)) +
+  scale_color_manual(values = c("#E69F00", "#0072B2")) +
+  xlab("") +
+  ylab("DON (ppm)") +
+  theme_classic() +
+  facet_wrap(~Cultivar)
+Question_2
+```
+
+#Question 3 - Change the y-variable to plot X15ADON and MassperSeed_mg. The y-axis label should now be “15ADON” and “Seed Mass (mg)”. Save plots made in questions 1 and 3 into three separate R objects.
+```{r}
+Question_3a <- ggplot(mycotoxin, aes(x = Treatment, y = X15ADON, color = Cultivar)) +
+  geom_boxplot() +
+  geom_point(position = position_jitterdodge(jitter.width = 0.6)) +
+  scale_color_manual(values = c("#E69F00", "#0072B2")) +
+  xlab("") +
+  ylab("15ADON") +
+  theme_classic() +
+  facet_wrap(~Cultivar)
+Question_3a
+
+Question_3b <- ggplot(mycotoxin, aes(x = Treatment, y = MassperSeed_mg, color = Cultivar)) +
+  geom_boxplot() +
+  geom_point(position = position_jitterdodge(jitter.width = 0.6)) +
+  scale_color_manual(values = c("#E69F00", "#0072B2")) +
+  xlab("") +
+  ylab("Seed Mass (mg)") +
+  theme_classic() +
+  facet_wrap(~Cultivar)
+Question_3b
+
+```
+
+#Question 4 - Use ggarrange function to combine all three figures into one with three columns and one row. Set the labels for the subplots as A, B and C. Set the option common.legend = T within ggarage function. What did the common.legend option do? HINT: I didn’t specifically cover this in the tutorial, but you can go to the help page for the ggarange function to figure out what the common.legend option does and how to control it. 
+
+```{r}
+Question_4Combo <- ggarrange(Question_2, Question_3a, Question_3b, labels = "auto",
+  nrow = 1,
+  ncol = 3, 
+  common.legend = T) #logical value. Default is FALSE. If TRUE, a common unique legend will be created for arranged plots
+Question_4Combo
+```
+
+#Question 5 - Use geom_pwc() to add t.test pairwise comparisons to the three plots made above. Save each plot as a new R object, and combine them again with ggarange as you did in question 4. 
+```{r}
+Stats_Question_2 <- Question_2 +
+  geom_pwc(aes(group = Treatment), method = "t_test", label = "p.adj.signif")
+Stats_Question_2
+
+Stats_Question3a <- Question_3a +
+  geom_pwc(aes(group = Treatment), method = "t_test", label = "p.adj.signif")
+Stats_Question3a
+  
+Stats_Question3b <- Question_3b +
+  geom_pwc(aes(group = Treatment), method = "t_test", label = "p.adj.signif")
+Stats_Question3b
+
+#combination graph
+Question_5Combo <- ggarrange(Stats_Question_2, Stats_Question3a, Stats_Question3b, labels = "auto",
+  nrow = 1,
+  ncol = 3, 
+  common.legend = T)
+Question_5Combo
+```
+
